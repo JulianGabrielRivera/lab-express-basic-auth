@@ -14,29 +14,30 @@ router.post('/signup', (req, res, next) => {
   const { username, password } = req.body;
 
   // bcrypt hashing then save to database
-  bcryptjs
-    .hash(password, 10)
-    .then((hashedPassword) => {
-      //  cant use shorthand this way
-      User.create({ username, password: hashedPassword }).then((userfromDB) => {
-        console.log('new user', userfromDB);
-        res.redirect('signup');
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send('failure');
-    });
   // bcryptjs
-  //   .genSalt(saltRounds)
-  //   .then((salt) => bcryptjs.hash(password, salt))
-  //   .then((password) => {
-  //     console.log(`password secured`, password);
+  //   .hash(password, 10)
+  //   .then((hashedPassword) => {
+  //     //  cant use shorthand this way
+  //     User.create({ username, password: hashedPassword }).then((userfromDB) => {
+  //       console.log('new user', userfromDB);
+  //       res.redirect('signup');
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //     res.send('failure');
   //   });
-  // User.create({ username, password }).then((userfromDB) => {
-  //   console.log('new user', userfromDB);
-  //   res.redirect('signup');
-  // });
+  bcryptjs
+    .genSalt(saltRounds)
+
+    .then((salt) => bcryptjs.hash(password, salt))
+    .then((password) => {
+      console.log(`password secured`, password);
+    });
+  return User.create({ username, password }).then((userfromDB) => {
+    console.log('new user', userfromDB);
+    res.redirect('signup');
+  });
 });
 
 router.get('/login', isLoggedOut, (req, res, next) => res.render('auth/login'));
