@@ -11,7 +11,20 @@ router.get('/signup', isLoggedOut, (req, res, next) => {
 });
 
 router.post('/signup', (req, res, next) => {
-  const { username, password } = req.body;
+  // without trim
+  // const { username, password } = req.body;
+
+  // with trim
+  const username = req.body.username.trim();
+  const password = req.body.password.trim();
+  if (username === '' || password === '') {
+    console.log('Error - empty username or password');
+    res.render('auth/signup', {
+      errorMessage: ' Username or password cannot be empty',
+    });
+    //  stops the function and returns
+    return;
+  }
 
   // bcrypt hashing then save to database
   // bcryptjs
@@ -29,15 +42,27 @@ router.post('/signup', (req, res, next) => {
   //   });
   bcryptjs
     .genSalt(saltRounds)
+    // attached to above promise
+    .then((salt) => {
+      return bcryptjs.hash(password, salt);
+    })
+    // attached to abbove promise
+    .then((hashedPassword) => {
+      return User.create({ username, password: hashedPassword });
+    })
+    .then((userfromDB) => {
+      console.log('new user', userfromDB);
+      res.redirect('signup');
 
-    .then((salt) => bcryptjs.hash(password, salt))
-    .then((password) => {
-      console.log(`password secured`, password);
+      // .then((password) => {
+      //   console.log(`password secured`, password);
+      // });
+    })
+    .catch((err) => {
+      console.log(err);
+      next(err);
     });
-  return User.create({ username, password }).then((userfromDB) => {
-    console.log('new user', userfromDB);
-    res.redirect('signup');
-  });
+  // attached to above promise
 });
 
 router.get('/login', isLoggedOut, (req, res, next) => res.render('auth/login'));
